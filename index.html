@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>RankHub</title>
+<link href="https://fonts.googleapis.com/css2?family=Titan+One&family=Nunito:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; }
+  body {
+    min-height: 100vh;
+    background: radial-gradient(1200px 600px at 50% -10%, #232A5C 0%, #12142B 55%, #0D0F22 100%);
+    background-attachment: fixed;
+    font-family: Nunito, 'Trebuchet MS', sans-serif;
+    color: #E8EAF6; padding-bottom: 40px;
+  }
+  .header { text-align: center; padding: 26px 16px 10px; }
+  .title { font-family: 'Titan One', 'Arial Black', sans-serif; font-size: clamp(34px, 8vw, 52px); letter-spacing: 2px; color: #fff; text-shadow: 0 4px 24px rgba(120,90,255,.45); }
+  .title span { color: var(--accent); }
+  .subtitle { color: #8A8FB8; font-size: 14px; font-weight: 700; margin-top: 2px; }
+  .lockwrap { margin-top: 10px; }
+  .tabs { display: flex; gap: 8px; justify-content: center; padding: 14px 12px 6px; flex-wrap: wrap; }
+  .tab { border: none; border-radius: 14px; padding: 12px 16px; font-family: 'Titan One', sans-serif; font-size: 13px; letter-spacing: .5px; cursor: pointer; transition: all .18s ease; background: #1C2040; color: #8A8FB8; }
+  .tab.active { color: #fff; transform: translateY(-2px); }
+  .togglewrap { display: flex; gap: 4px; justify-content: center; margin: 6px auto 14px; background: #1C2040; border-radius: 12px; padding: 4px; width: fit-content; }
+  .togglebtn { border: none; border-radius: 9px; padding: 8px 18px; font-weight: 800; font-size: 13px; cursor: pointer; background: transparent; color: #8A8FB8; font-family: inherit; }
+  .board { max-width: 560px; margin: 0 auto; padding: 0 12px; }
+  .banner { border-radius: 16px 16px 0 0; padding: 12px 16px; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.3); font-family: 'Titan One', cursive; font-size: 17px; letter-spacing: 1px; }
+  .empty { background: #171B38; border: 1px dashed #2C3160; border-top: none; padding: 28px 16px; text-align: center; color: #8A8FB8; font-weight: 700; }
+  .row { background: #171B38; border: 1px solid #262B52; border-top: none; padding: 14px 14px 12px; }
+  .rowtop { display: flex; gap: 12px; align-items: center; }
+  .rank { width: 38px; height: 38px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: 'Titan One', sans-serif; font-size: 16px; color: #fff; flex-shrink: 0; background: #262B52; }
+  .pname { font-weight: 800; font-size: 17px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .badge { font-size: 11px; font-weight: 800; border: 1px solid; border-radius: 999px; padding: 2px 8px; letter-spacing: .5px; }
+  .stats { color: #8A8FB8; font-size: 13px; font-weight: 700; margin-top: 2px; }
+  .stats b { color: var(--accent); } .stats .hs { color: #fff; }
+  .progbar { height: 8px; border-radius: 999px; background: #0E1128; overflow: hidden; margin-top: 10px; }
+  .progfill { height: 100%; border-radius: 999px; transition: width .3s ease; }
+  .proglabel { font-size: 11px; font-weight: 700; color: #8A8FB8; margin-top: 4px; }
+  .actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .btn { border: none; border-radius: 10px; padding: 10px 14px; color: #fff; font-weight: 800; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn.grey { background: #262B52; color: #C9CFF2; }
+  .btn.ghost { background: transparent; color: #5A6090; border: 1px solid #2C3160; }
+  .btn.danger { background: #B3261E; }
+  .btn:disabled { opacity: .5; cursor: wait; }
+  input[type="text"], input[type="number"] { background: #0E1128; border: 1px solid #2C3160; border-radius: 10px; color: #fff; padding: 10px 12px; font-size: 14px; font-weight: 700; font-family: inherit; }
+  input:focus, .btn:focus-visible, .tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .addrow { display: flex; gap: 8px; background: #171B38; border: 1px solid #262B52; border-top: none; border-radius: 0 0 16px 16px; padding: 14px; }
+  .addrow input { flex: 1; min-width: 0; padding: 12px 14px; font-size: 15px; }
+  .locknote { justify-content: center; align-items: center; color: #5A6090; font-size: 12px; font-weight: 800; }
+  .key { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 16px; font-size: 12px; font-weight: 800; }
+  .footnote { text-align: center; color: #5A6090; font-size: 11px; font-weight: 700; margin-top: 8px; }
+  .lockmsg { color: #FF6B6B; font-size: 12px; font-weight: 800; margin-top: 6px; }
+  .syncing { text-align: center; color: #8A8FB8; font-weight: 700; padding: 30px 0; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #262B52; color: #fff; font-weight: 800; font-size: 13px; padding: 10px 18px; border-radius: 999px; opacity: 0; transition: opacity .3s; pointer-events: none; z-index: 10; }
+  .toast.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="title">RANK<span>HUB</span></div>
+  <div class="subtitle">Family gaming leaderboard</div>
+  <div class="lockwrap" id="lockwrap"></div>
+</div>
+<div class="tabs" id="tabs"></div>
+<div class="togglewrap">
+  <button class="togglebtn" id="btn-month" onclick="setView('month')">This Month</button>
+  <button class="togglebtn" id="btn-alltime" onclick="setView('alltime')">All Time</button>
+</div>
+<div class="board" id="board"><div class="syncing">Loading leaderboard…</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbyp3WqPTFiirvIAMtsQcVqO4LJnpB_GB9x_VZhWYEtreMryOrA1aHefO2z_HIXftCIf/exec";
+
+const GAMES = [
+  { id: "rocket",   name: "Rocket League", short: "RL",  grad: "linear-gradient(135deg,#FF7A00,#FFB300)", accent: "#FF8C1A" },
+  { id: "roblox",   name: "Roblox",        short: "RBX", grad: "linear-gradient(135deg,#E2231A,#FF5A4E)", accent: "#FF4136" },
+  { id: "fortnite", name: "Fortnite",      short: "FN",  grad: "linear-gradient(135deg,#7B2FF7,#2FB4FF)", accent: "#9B5CFF" },
+];
+const OVERALL = { id: "overall", name: "All Games", grad: "linear-gradient(135deg,#00C48C,#00E0FF)", accent: "#00D4B0" };
+const TIERS = [
+  { name: "Ultimate", min: 200, color: "#FF3DDB", icon: "👑" },
+  { name: "Gold",     min: 100, color: "#FFD24A", icon: "🥇" },
+  { name: "Silver",   min: 50,  color: "#C9D4E3", icon: "🥈" },
+  { name: "Bronze",   min: 20,  color: "#E0925A", icon: "🥉" },
+];
+
+let players = [];          // flat list: {id, game, name, totalWins, highScore, periods}
+let game = "rocket";
+let view = "month";
+let canEdit = false;
+let askName = false;
+let lockMsg = "";
+let editingScore = null;
+let confirmDel = null;
+let busy = false;
+
+const pd = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
+const monthLabel = () => new Date().toLocaleDateString("en-GB", { month: "long", year: "numeric" });
+const tierFor = w => TIERS.find(t => w >= t.min) || null;
+const nextTier = w => [...TIERS].reverse().find(t => w < t.min) || null;
+const monthWins = p => (p.periods && p.periods[pd()]) || 0;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const curGame = () => game === "overall" ? OVERALL : GAMES.find(g => g.id === game);
+
+function toast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg; t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2500);
+}
+
+async function load() {
+  try {
+    const res = await fetch(API);
+    const data = await res.json();
+    if (data.ok) { players = data.players; render(); }
+    else throw new Error(data.error);
+  } catch (e) {
+    document.getElementById("board").innerHTML = '<div class="empty">Couldn\'t reach the leaderboard. Check your connection and pull to refresh.</div>';
+  }
+}
+
+async function post(body) {
+  if (busy) return;
+  busy = true; render();
+  try {
+    const res = await fetch(API, { method: "POST", headers: { "Content-Type": "text/plain" }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (data.ok) players = data.players;
+    else toast("Error: " + data.error);
+  } catch (e) {
+    toast("Couldn't save — check connection");
+  }
+  busy = false;
+  editingScore = null; confirmDel = null;
+  render();
+}
+
+function setView(v) { view = v; render(); }
+function setGame(g) { game = g; editingScore = null; confirmDel = null; render(); }
+function tryUnlock() {
+  const val = document.getElementById("nameinput").value.trim().toLowerCase();
+  if (val === "joseph") { canEdit = true; askName = false; lockMsg = ""; }
+  else { lockMsg = "Sorry — only Joseph can edit the leaderboard."; }
+  render();
+}
+function toggleLock() { canEdit = false; editingScore = null; confirmDel = null; render(); }
+
+function addPlayer() {
+  const inp = document.getElementById("addinput");
+  const name = inp.value.trim();
+  if (!name) return;
+  inp.value = "";
+  post({ action: "addPlayer", game, name });
+}
+
+function render() {
+  const g = curGame();
+  document.documentElement.style.setProperty("--accent", g.accent);
+
+  // Lock UI
+  const lw = document.getElementById("lockwrap");
+  if (canEdit) {
+    lw.innerHTML = '<button class="btn grey" style="font-size:12px" onclick="toggleLock()">🔓 Editing as Joseph — tap to lock</button>';
+  } else if (askName) {
+    lw.innerHTML = '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
+      '<input type="text" id="nameinput" placeholder="Enter your name" style="width:170px" onkeydown="if(event.key===\'Enter\')tryUnlock()">' +
+      '<button class="btn" style="background:' + g.grad + '" onclick="tryUnlock()">Unlock</button>' +
+      '<button class="btn ghost" onclick="askName=false;lockMsg=\'\';render()">Cancel</button></div>' +
+      (lockMsg ? '<div class="lockmsg">' + lockMsg + '</div>' : '');
+    setTimeout(() => { const i = document.getElementById("nameinput"); if (i) i.focus(); }, 0);
+  } else {
+    lw.innerHTML = '<button class="btn grey" style="font-size:12px" onclick="askName=true;render()">🔒 View only — tap to edit</button>';
+  }
+
+  // Tabs
+  document.getElementById("tabs").innerHTML = [...GAMES, OVERALL].map(gm =>
+    '<button class="tab' + (game === gm.id ? ' active' : '') + '" style="' +
+    (game === gm.id ? 'background:' + gm.grad : '') + '" onclick="setGame(\'' + gm.id + '\')">' +
+    (gm.id === "overall" ? "🏆 All Games" : gm.name) + '</button>').join("");
+
+  // Toggle
+  const bm = document.getElementById("btn-month"), ba = document.getElementById("btn-alltime");
+  bm.style.background = view === "month" ? g.grad : "transparent"; bm.style.color = view === "month" ? "#fff" : "#8A8FB8";
+  ba.style.background = view === "alltime" ? g.grad : "transparent"; ba.style.color = view === "alltime" ? "#fff" : "#8A8FB8";
+
+  // Board
+  let html = '<div class="banner" style="background:' + g.grad + '">' + g.name + ' — ' +
+    (view === "month" ? monthLabel() : "All-Time") + ' League</div>';
+
+  if (game === "overall") {
+    html += renderOverall(g);
+    html += '<div class="addrow locknote">Combined across Rocket League, Roblox and Fortnite</div>';
+  } else {
+    html += renderGame(g);
+    if (canEdit) {
+      html += '<div class="addrow"><input type="text" id="addinput" placeholder="Add a player…" onkeydown="if(event.key===\'Enter\')addPlayer()">' +
+        '<button class="btn" style="background:' + g.grad + ';padding:12px 20px"' + (busy ? " disabled" : "") + ' onclick="addPlayer()">Add</button></div>';
+    } else {
+      html += '<div class="addrow locknote">🔒 Only Joseph can add players and scores</div>';
+    }
+  }
+
+  html += '<div class="key">' + TIERS.slice().reverse().map(t =>
+    '<span style="color:' + t.color + '">' + t.icon + ' ' + t.name + ' ' + t.min + '+' + (t.name === "Gold" ? " (to 199)" : "") + '</span>').join("") + '</div>';
+  html += '<div class="footnote">Awards are earned from all-time wins in each game. Monthly tables reset automatically.</div>';
+  html += '<div class="footnote">Shared leaderboard — everyone sees the same scores. Pull down to refresh.</div>';
+
+  document.getElementById("board").innerHTML = html;
+}
+
+function renderGame(g) {
+  const list = players.filter(p => p.game === game)
+    .sort((a, b) => {
+      const wa = view === "month" ? monthWins(a) : a.totalWins;
+      const wb = view === "month" ? monthWins(b) : b.totalWins;
+      return wb - wa || b.highScore - a.highScore;
+    });
+  if (!list.length) return '<div class="empty">No players yet. ' + (canEdit ? "Add someone below to start the battle. 🎮" : "Ask Joseph to add some players. 🎮") + '</div>';
+
+  return list.map((p, i) => {
+    const tier = tierFor(p.totalWins), nt = nextTier(p.totalWins);
+    const prevMin = tier ? tier.min : 0;
+    const prog = nt ? Math.min(100, ((p.totalWins - prevMin) / (nt.min - prevMin)) * 100) : 100;
+    const shown = view === "month" ? monthWins(p) : p.totalWins;
+    let actions = "";
+    if (canEdit) {
+      actions = '<div class="actions">' +
+        '<button class="btn" style="background:' + g.grad + '"' + (busy ? " disabled" : "") + ' onclick="post({action:\'addWin\',id:\'' + p.id + '\'})">+1 Win</button>' +
+        '<button class="btn grey"' + (busy ? " disabled" : "") + ' onclick="post({action:\'subWin\',id:\'' + p.id + '\'})">−1</button>';
+      if (editingScore === p.id) {
+        actions += '<input type="number" id="scoreinput" inputmode="numeric" placeholder="New high score" style="width:130px">' +
+          '<button class="btn" style="background:' + g.grad + '"' + (busy ? " disabled" : "") + ' onclick="post({action:\'setHighScore\',id:\'' + p.id + '\',value:parseInt(document.getElementById(\'scoreinput\').value,10)||0})">Save</button>';
+      } else {
+        actions += '<button class="btn grey" onclick="editingScore=\'' + p.id + '\';confirmDel=null;render()">High score</button>';
+      }
+      if (confirmDel === p.id) {
+        actions += '<button class="btn danger"' + (busy ? " disabled" : "") + ' onclick="post({action:\'deletePlayer\',id:\'' + p.id + '\'})">Confirm remove</button>';
+      } else {
+        actions += '<button class="btn ghost" onclick="confirmDel=\'' + p.id + '\';editingScore=null;render()">✕</button>';
+      }
+      actions += '</div>';
+    }
+    return '<div class="row" style="border-color:' + (i === 0 ? g.accent : "#262B52") + '">' +
+      '<div class="rowtop"><div class="rank" style="' + (i === 0 ? 'background:' + g.grad : '') + '">' + (i + 1) + '</div>' +
+      '<div style="flex:1;min-width:0"><div class="pname">' + esc(p.name) +
+      (tier ? ' <span class="badge" style="color:' + tier.color + ';border-color:' + tier.color + '">' + tier.icon + ' ' + tier.name + '</span>' : '') +
+      '</div><div class="stats"><b>' + shown + '</b> wins ' + (view === "month" ? "this month" : "all time") +
+      ' · high score <span class="hs">' + p.highScore.toLocaleString() + '</span>' +
+      (view === "month" ? ' · ' + p.totalWins + ' all time' : '') + '</div></div></div>' +
+      '<div class="progbar"><div class="progfill" style="width:' + prog + '%;background:' + (nt ? nt.color : "#FF3DDB") + '"></div></div>' +
+      '<div class="proglabel">' + (nt ? (nt.min - p.totalWins) + ' wins to ' + nt.icon + ' ' + nt.name : '👑 Max rank reached!') + '</div>' +
+      actions + '</div>';
+  }).join("");
+}
+
+function renderOverall(g) {
+  const map = {};
+  for (const gm of GAMES) {
+    for (const p of players.filter(x => x.game === gm.id)) {
+      const key = p.name.trim().toLowerCase();
+      if (!map[key]) map[key] = { name: p.name, totalWins: 0, monthW: 0, perGame: {}, awards: 0 };
+      const m = map[key];
+      m.totalWins += p.totalWins;
+      m.monthW += monthWins(p);
+      m.perGame[gm.short] = (m.perGame[gm.short] || 0) + p.totalWins;
+      if (tierFor(p.totalWins)) m.awards++;
+    }
+  }
+  const rows = Object.values(map).sort((a, b) =>
+    view === "month" ? b.monthW - a.monthW || b.totalWins - a.totalWins : b.totalWins - a.totalWins || b.monthW - a.monthW);
+  if (!rows.length) return '<div class="empty">No players yet — they get added inside each game tab. 🎮</div>';
+
+  return rows.map((p, i) =>
+    '<div class="row" style="border-color:' + (i === 0 ? g.accent : "#262B52") + '">' +
+    '<div class="rowtop"><div class="rank" style="' + (i === 0 ? 'background:' + g.grad : '') + '">' + (i + 1) + '</div>' +
+    '<div style="flex:1;min-width:0"><div class="pname">' + esc(p.name) +
+    (p.awards ? ' <span class="badge" style="color:#FFD24A;border-color:#FFD24A">🏅 ' + p.awards + ' award' + (p.awards > 1 ? 's' : '') + '</span>' : '') +
+    '</div><div class="stats"><b>' + (view === "month" ? p.monthW : p.totalWins) + '</b> wins ' +
+    (view === "month" ? "this month" : "all time") + ' · ' +
+    GAMES.map(gm => gm.short + ' ' + (p.perGame[gm.short] || 0)).join(' · ') +
+    '</div></div></div></div>').join("");
+}
+
+// Refresh when the app is brought back to the foreground
+document.addEventListener("visibilitychange", () => { if (!document.hidden) load(); });
+
+render();
+load();
+</script>
+</body>
+</html>
